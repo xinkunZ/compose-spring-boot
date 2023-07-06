@@ -1,0 +1,13 @@
+----------------------------------------------------------------
+Wed Jul 05 19:21:02 CST 2023:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.16.1.1 - (1901046): instance a816c00e-0189-25c8-c86f-000001d1e740 
+on database directory /Users/zhangxinkun/.map-studio/db with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@1055e4af 
+Loaded from file:/Users/zhangxinkun/.gradle/caches/modules-2/files-2.1/org.apache.derby/derby/10.16.1.1/f9ca2054b3e33ec3f3f19df4a7490352d82de54a/derby-10.16.1.1.jar
+java.vendor=JetBrains s.r.o.
+java.runtime.version=17.0.3+7-b469.16
+user.dir=/Users/zhangxinkun/workspace/phoenix/map-studio
+os.name=Mac OS X
+os.arch=aarch64
+os.version=14.0
+derby.system.home=null
+Database Class Loader started - derby.database.classpath=''
