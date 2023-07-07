@@ -1,27 +1,21 @@
 package com.kc.phoenix.studio.app
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.compose.runtime.*
+import androidx.compose.ui.*
 import androidx.compose.ui.awt.SwingPanel
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.unit.DpSize
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.*
 import com.formdev.flatlaf.intellijthemes.FlatArcOrangeIJTheme
-import com.kc.phoenix.studio.app.swing.ExitDialog
-import com.kc.phoenix.studio.app.swing.LoadingFrame
-import com.kc.phoenix.studio.app.swing.PlayFrame
+import com.kc.phoenix.studio.app.swing.*
+import io.kanro.compose.jetbrains.expui.theme.*
+import io.kanro.compose.jetbrains.expui.window.*
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.builder.SpringApplicationBuilder
 import org.springframework.boot.context.event.ApplicationReadyEvent
-import org.springframework.context.ApplicationContext
-import org.springframework.context.ApplicationListener
+import org.springframework.context.*
 import java.awt.Toolkit
 import kotlin.concurrent.thread
 
@@ -45,12 +39,29 @@ fun startWithUI(args: Array<String>) {
             size = DpSize(400.dp, 200.dp)
         )
 
-        Window(title = "Map Studio", onCloseRequest = {
-            openDialog.value = true
-        }, resizable = true, state = windowState, visible = frameVisible.value, onKeyEvent = {
-            println("key event: ${it.key}")
-            true
-        }) {
+        val color = LightTheme.MainToolBarColors.copy(
+            normalAreaColors = LightTheme.MainToolBarColors.normalAreaColors
+                .copy(startBackground = Color.Red, endBackground = Color.Red),
+        )
+        val theme = object : Theme by LightTheme {
+            override fun provideValues(): Array<ProvidedValue<*>> {
+                val value = LightTheme.provideValues().toMutableSet()
+                value.removeIf { it.compositionLocal == LocalMainToolBarColors }
+                value.add(LocalMainToolBarColors provides color)
+                return value.toTypedArray()
+            }
+        }
+        val state = rememberWindowState(size = DpSize(1200.dp, 700.dp))
+        JBWindow(
+            title = "Spring Boot",
+            theme = theme,
+            state = state,
+            onCloseRequest = {
+                openDialog.value = true
+            },
+            mainToolBar = {
+            }
+        ) {
             MaterialTheme {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Box(modifier = Modifier.matchParentSize()) {

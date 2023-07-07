@@ -16,8 +16,11 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
 
     implementation(compose.desktop.currentOs)
+    implementation(compose.desktop.currentOs) {
+        exclude("org.jetbrains.compose.material")
+    }
+    implementation("com.bybutter.compose:compose-jetbrains-expui-theme:2.1.0")
     implementation(compose.material3)
-
     implementation("com.formdev:flatlaf:2.5")
     implementation("com.formdev:flatlaf-extras:2.5")
     implementation("com.formdev:flatlaf-intellij-themes:2.5")
@@ -121,6 +124,7 @@ compose.desktop {
         mainJar.set(bootJar)
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+            modules("jdk.unsupported")
             packageName = "compose-spring-boot"
             packageVersion = "1.0.0"
         }
