@@ -1,4 +1,4 @@
-package com.kc.phoenix.studio.app.swing
+package com.kc.phoenix.studio.app
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.BorderStroke
@@ -7,11 +7,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.*
-import com.kc.phoenix.studio.app.primary
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogState
 
 @Composable
 @Preview

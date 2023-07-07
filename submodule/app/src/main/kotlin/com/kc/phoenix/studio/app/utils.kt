@@ -1,11 +1,7 @@
 package com.kc.phoenix.studio.app
 
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.net.Socket
-
-val log: Logger = LoggerFactory.getLogger("com.kc.phoenix.studio.app.start")
 
 lateinit var systemUrl: String
 
@@ -21,7 +17,7 @@ fun withPort(args: Array<String>): List<String> {
     var port = 9490
     while (port < 9999) {
         if (isLocalPortInUse(port)) {
-            log.warn("$port port is in use, try to find another port")
+            MAIN_LOGGER.warn("$port port is in use, try to find another port")
         } else {
             break
         }
@@ -30,7 +26,7 @@ fun withPort(args: Array<String>): List<String> {
     val newArgs = arrayListOf(*args)
     newArgs.removeIf { it.startsWith("--server.port=") }
     newArgs.add("--server.port=$port")
-    log.info("start with port {}", port)
+    MAIN_LOGGER.info("start with port {}", port)
     systemUrl = "http://localhost:$port"
     return newArgs
 }
