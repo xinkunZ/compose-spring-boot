@@ -15,7 +15,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
 
-    implementation(compose.desktop.currentOs)
     implementation(compose.desktop.currentOs) {
         exclude("org.jetbrains.compose.material")
     }
@@ -120,11 +119,17 @@ compose.desktop {
         disableDefaultConfiguration()
         mainClass = "org.springframework.boot.loader.JarLauncher"
         val bootJar = tasks.bootJar.get().archiveFile
+        configurations.runtimeClasspath.get().forEach {
+            if (it.name.contains("skiko-awt-runtime-")){
+                fromFiles(it)
+            }
+        }
         fromFiles(bootJar)
         mainJar.set(bootJar)
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            modules("jdk.unsupported")
+            modules("jdk.unsupported","jcef")
+            includeAllModules = true
             packageName = "compose-spring-boot"
             packageVersion = "1.0.0"
         }
