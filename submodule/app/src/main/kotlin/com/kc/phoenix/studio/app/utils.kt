@@ -27,6 +27,6 @@ fun withPort(args: Array<String>): List<String> {
     newArgs.removeIf { it.startsWith("--server.port=") }
     newArgs.add("--server.port=$port")
     MAIN_LOGGER.info("start with port {}", port)
-    systemUrl = "http://localhost:$port"
+    systemUrl = "http://localhost:$port/doc"
     return newArgs
 }

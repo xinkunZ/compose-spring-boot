@@ -1,4 +1,6 @@
+import org.apache.commons.io.FileUtils
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.kotlin.com.intellij.openapi.util.SystemInfo
 
 plugins {
     id("org.springframework.boot")
@@ -12,7 +14,6 @@ dependencies {
 
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-validation")
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
 
     implementation(compose.desktop.currentOs) {
         exclude("org.jetbrains.compose.material")
@@ -36,20 +37,59 @@ tasks.processResources {
 }
 
 tasks.bootJar {
-    // do not use .jar to prevent compose gradle plugin unzip it
     archiveFileName.set("main.boot")
 }
 
-tasks.register("installer") {
+val buildNativeHome: Directory by lazy {
+    val app = compose.desktop.application
+    app.nativeDistributions.outputBaseDir
+        .dir("main/${TargetFormat.AppImage.outputDirName}").get()
+}
+
+tasks.register("buildWithJBR") {
+    dependsOn("createDistributable")
     group = "build"
+    doLast {
+        val app = compose.desktop.application
+        val runtime = File(System.getProperty("java.home")).parentFile
+
+        val directory = if (SystemInfo.isMac) {
+            buildNativeHome.dir("${app.nativeDistributions.packageName}.app/Contents/runtime/Contents")
+        } else {
+            buildNativeHome.dir("${app.nativeDistributions.packageName}/runtime")
+        }
+        log(runtime.canonicalPath)
+        log(directory.asFile.canonicalPath)
+        FileUtils.deleteDirectory(directory.asFile)
+
+        if (SystemInfo.isMac) {
+            FileUtils.deleteDirectory(directory.asFile)
+            // macOS下默认复制文件是不带权限的，因此如果使用FileUtils复制进去的jdk是无法运行的(丢失了chmod 777)
+            val args = arrayOf("cp", "-p", "-r", runtime.canonicalPath, directory.asFile.canonicalPath)
+            log(args.joinToString(" "))
+            Runtime.getRuntime().exec(args)
+        } else {
+            FileUtils.copyDirectory(runtime, directory.asFile)
+        }
+    }
+}
+
+
+tasks.register("releaseZip") {
+    group = "build"
+    dependsOn("buildWithJBR")
 }
 
 tasks.whenTaskAdded {
     if (this.name == "createDistributable") {
         this.dependsOn(tasks.build)
+        tasks["buildWithJBR"].dependsOn(this)
     }
     if (this.name == "packageDistributionForCurrentOS") {
-        tasks["installer"].dependsOn(this)
+        this.dependsOn(tasks["buildWithJBR"])
+        if (SystemInfo.isMac) {
+            tasks["releaseZip"].dependsOn(this)
+        }
     }
 }
 
@@ -69,7 +109,6 @@ compose.desktop {
         mainJar.set(bootJar)
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            modules("jdk.unsupported", "jcef")
             includeAllModules = true
             packageName = "compose-spring-boot"
             packageVersion = "1.0.0"

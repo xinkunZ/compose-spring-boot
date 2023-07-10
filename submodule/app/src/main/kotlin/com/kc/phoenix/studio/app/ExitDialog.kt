@@ -26,7 +26,7 @@ fun ExitDialog(doExit: () -> Unit = {}, dismiss: () -> Unit = {}, state: DialogS
                 Icon(
                     Icons.Filled.Warning,
                     "",
-                    tint = primary, modifier = Modifier.align(Alignment.CenterVertically)
+                    tint = Color.Yellow, modifier = Modifier.align(Alignment.CenterVertically)
                 )
 
                 Spacer(modifier = Modifier.padding(10.dp))

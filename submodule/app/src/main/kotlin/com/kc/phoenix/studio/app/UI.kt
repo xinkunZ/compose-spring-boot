@@ -1,50 +1,42 @@
 package com.kc.phoenix.studio.app
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.ProvidedValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.compose.runtime.*
+import androidx.compose.ui.*
 import androidx.compose.ui.awt.SwingPanel
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.DpSize
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.WindowPosition
-import androidx.compose.ui.window.application
-import androidx.compose.ui.window.rememberDialogState
-import androidx.compose.ui.window.rememberWindowState
+import androidx.compose.ui.unit.*
+import androidx.compose.ui.window.*
 import com.google.common.collect.Lists
 import com.jetbrains.cef.JCefAppConfig
-import io.kanro.compose.jetbrains.expui.theme.LightTheme
-import io.kanro.compose.jetbrains.expui.theme.Theme
-import io.kanro.compose.jetbrains.expui.window.JBWindow
-import io.kanro.compose.jetbrains.expui.window.LocalMainToolBarColors
+import io.kanro.compose.jetbrains.expui.theme.*
+import io.kanro.compose.jetbrains.expui.window.*
 import org.apache.commons.lang3.StringUtils
 import org.cef.CefApp
-import org.cef.browser.CefBrowser
-import org.cef.browser.CefRendering
+import org.cef.browser.*
 import org.springframework.boot.SpringApplication
-import org.springframework.boot.builder.SpringApplicationBuilder
 import org.springframework.boot.context.event.ApplicationReadyEvent
-import org.springframework.context.ApplicationContext
-import org.springframework.context.ApplicationListener
-import java.awt.Component
-import java.awt.Toolkit
-import java.awt.event.KeyAdapter
-import java.awt.event.KeyEvent
+import org.springframework.context.*
+import java.awt.*
+import java.awt.event.*
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.concurrent.thread
 
-val primary = Color(233, 97, 0)
 
-fun startWithUI(args: Array<String>) {
-    val applicationContext = runSpringBoot(args)
+object ApplicationReadyListener : ApplicationListener<ApplicationReadyEvent> {
+
+    override fun onApplicationEvent(event: ApplicationReadyEvent) {
+        MAIN_LOGGER.info("load ui")
+        loadCefBrowser(event.args)
+        mainUI(event.applicationContext)
+    }
+
+}
+
+fun mainUI(applicationContext: ConfigurableApplicationContext) {
     val size = Toolkit.getDefaultToolkit().screenSize.size
-
     application {
         val frameVisible = remember { mutableStateOf(true) }
         val windowState = rememberWindowState(
@@ -110,25 +102,6 @@ fun startWithUI(args: Array<String>) {
             }
         }
     }
-}
-
-
-fun runSpringBoot(args: Array<String>): ApplicationContext {
-    MAIN_LOGGER.info("load spring boot")
-    return SpringApplicationBuilder(StudioApplication::class.java)
-        .headless(false)
-        .listeners(ApplicationReadyListener)
-        .run(*withPort(args).toTypedArray());
-}
-
-
-object ApplicationReadyListener : ApplicationListener<ApplicationReadyEvent> {
-
-    override fun onApplicationEvent(event: ApplicationReadyEvent) {
-        MAIN_LOGGER.info("load ui")
-        loadCefBrowser(event.args)
-    }
-
 }
 
 
