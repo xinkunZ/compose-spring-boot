@@ -70,7 +70,6 @@ subprojects {
             dependency("com.alibaba:druid-spring-boot-starter:1.2.8")
             dependency("com.aliyun.oss:aliyun-sdk-oss:3.8.0")
             dependency("com.aventrix.jnanoid:jnanoid:2.0.0")
-            dependency("org.apache.derby:derby:10.16.1.1")
         }
     }
 

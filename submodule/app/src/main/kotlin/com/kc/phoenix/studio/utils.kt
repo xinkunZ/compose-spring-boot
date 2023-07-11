@@ -13,6 +13,7 @@ private fun isLocalPortInUse(port: Int): Boolean {
     }
 }
 
+// use random port to avoid port conflict
 fun withPort(args: Array<String>): List<String> {
     var port = 9490
     while (port < 9999) {

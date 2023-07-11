@@ -15,4 +15,11 @@ there is a gradle task to copy jetbrains runtime to native distribution, then it
 5. You can fully use kotlin compose to write GUI if you do not use web page. If not, kotlin compose just be like a jvm-electron container
 6. Can not reduce the native installer disk size(500MB+). In theory it contains JDK 17 and Chrome, bigger than Electron
 
+## Features
 
+- [x] A basic kotlin spring boot project with gradle
+- [x] Entry gradle task `releaseZip` for multiplatform build with Jetbrains runtime
+- [x] A loading indicator during spring boot startup
+- [x] Exit with a confirm dialog
+- [x] Custom MainToolBar with [compose-jetbrains-theme](https://github.com/ButterCam/compose-jetbrains-theme/)
+- [x] Swagger page as default web page after start

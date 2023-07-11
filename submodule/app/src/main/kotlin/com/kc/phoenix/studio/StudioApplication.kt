@@ -55,7 +55,8 @@ fun main(args: Array<String>) = application {
 
     LaunchedEffect("", block = {
         withContext(Dispatchers.IO) {
-            // 异步启动Spring Boot
+            // run spring boot in another thread.
+            // note: the `Dispatchers.Main` thread is swing awt, not `main` thread
             MAIN_LOGGER.info("load spring boot")
             applicationContext = SpringApplicationBuilder(StudioApplication::class.java)
                 .headless(false)
@@ -65,14 +66,12 @@ fun main(args: Array<String>) = application {
         }
     })
 
-    // 主Window位置
     val frameVisible = remember { mutableStateOf(true) }
     val windowState = rememberWindowState(
         position = WindowPosition(Alignment.Center),
         size = DpSize(size.width.dp, size.height.dp) - DpSize(150.dp, 150.dp)
     )
 
-    // 退出对话框
     val openDialog = remember { mutableStateOf(false) }
     val dialogState = rememberDialogState(
         windowState.position,
@@ -80,7 +79,7 @@ fun main(args: Array<String>) = application {
     )
 
     JBWindow(
-        title = "Map Studio",
+        title = "Compose Boot",
         theme = theme,
         state = windowState,
         visible = frameVisible.value,
@@ -107,7 +106,7 @@ fun main(args: Array<String>) = application {
                             ProvideTextStyle(MaterialTheme.typography.titleLarge) {
                                 Text(
                                     modifier = Modifier.align(Alignment.CenterHorizontally),
-                                    text = "应用启动中..."
+                                    text = "loading..."
                                 )
                             }
                         }
@@ -116,6 +115,7 @@ fun main(args: Array<String>) = application {
 
                 Box(modifier = Modifier.fillMaxSize()) {
                     if (openDialog.value) {
+                        // a simple exist confirm dialog
                         ExitDialog(
                             state = dialogState,
                             doExit = {
@@ -123,7 +123,7 @@ fun main(args: Array<String>) = application {
                                 frameVisible.value = false
                                 thread {
                                     MAIN_LOGGER.info("do exit...")
-                                    applicationContext?.let { SpringApplication.exit(it, { 0 }) }
+                                    SpringApplication.exit(applicationContext, { 0 })
                                     runCatching { MyCefBrowser.mainBrowser.doClose() }
                                     runCatching { MyCefBrowser.app.get().dispose() }
                                     exitApplication()

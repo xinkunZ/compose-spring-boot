@@ -54,7 +54,7 @@ fun ColumnScope.ConfirmCloseButtons(confirm: () -> Unit, dismiss: () -> Unit) {
             onClick = dismiss,
             colors = ButtonDefaults.outlinedButtonColors()
         ) {
-            Text("取消")
+            Text("Cancel")
         }
 
         Spacer(modifier = Modifier.width(10.dp))
@@ -63,7 +63,7 @@ fun ColumnScope.ConfirmCloseButtons(confirm: () -> Unit, dismiss: () -> Unit) {
             onClick = confirm,
             colors = ButtonDefaults.buttonColors()
         ) {
-            Text("确定")
+            Text("Confirm")
         }
     }
 }
