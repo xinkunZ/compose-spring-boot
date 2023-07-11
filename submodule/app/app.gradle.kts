@@ -24,10 +24,6 @@ dependencies {
     implementation("org.apache.commons:commons-lang3:3.12.0")
 }
 
-fun log(any: String) {
-    println("builder: $any")
-}
-
 
 tasks.register("copyWeb") {
     // put your copy web page logic, maybe copy from node dist directory
@@ -38,6 +34,7 @@ tasks.processResources {
 }
 
 tasks.bootJar {
+    // DO NOT use `.jar` suffix, because compose will unzip jar and broken spring boot jar format
     archiveFileName.set("main.boot")
 }
 
@@ -47,6 +44,7 @@ val buildNativeHome: Directory by lazy {
         .dir("main/${TargetFormat.AppImage.outputDirName}").get()
 }
 
+// task to copy JBR as runtime
 tasks.register("buildWithJBR") {
     dependsOn("createDistributable")
     group = "build"
@@ -59,15 +57,13 @@ tasks.register("buildWithJBR") {
         } else {
             buildNativeHome.dir("${app.nativeDistributions.packageName}/runtime")
         }
-        log(runtime.canonicalPath)
-        log(directory.asFile.canonicalPath)
         FileUtils.deleteDirectory(directory.asFile)
 
         if (SystemInfo.isMac) {
             FileUtils.deleteDirectory(directory.asFile)
-            // macOS下默认复制文件是不带权限的，因此如果使用FileUtils复制进去的jdk是无法运行的(丢失了chmod 777)
+            // use command copy in macOS with permission, or commons-io copy file will lose java 777 permission
+            // not test in linux, maybe linux needs these too
             val args = arrayOf("cp", "-p", "-r", runtime.canonicalPath, directory.asFile.canonicalPath)
-            log(args.joinToString(" "))
             Runtime.getRuntime().exec(args)
         } else {
             FileUtils.copyDirectory(runtime, directory.asFile)
@@ -101,6 +97,7 @@ compose.desktop {
         // use spring boot launcher
         mainClass = "org.springframework.boot.loader.JarLauncher"
         val bootJar = tasks.bootJar.get().archiveFile
+        // compose need unzip skiko runtime ddl/so files
         configurations.runtimeClasspath.get().forEach {
             if (it.name.contains("skiko-awt-runtime-")) {
                 fromFiles(it)
