@@ -1,4 +1,4 @@
-package com.kc.phoenix.studio.app
+package com.kc.phoenix.studio
 
 import java.io.IOException
 import java.net.Socket

@@ -14,6 +14,7 @@ dependencies {
 
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing")
 
     implementation(compose.desktop.currentOs) {
         exclude("org.jetbrains.compose.material")
