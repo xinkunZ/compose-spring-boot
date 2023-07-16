@@ -4,10 +4,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
-import androidx.compose.ui.awt.SwingPanel
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.*
+import com.kc.phoenix.studio.cef.*
+import io.kanro.compose.jetbrains.expui.control.Label
 import io.kanro.compose.jetbrains.expui.theme.*
 import io.kanro.compose.jetbrains.expui.window.*
 import kotlinx.coroutines.*
@@ -93,9 +94,9 @@ fun main(args: Array<String>) = application {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Box(modifier = Modifier.matchParentSize()) {
                     if (browserReady.value) {
-                        SwingPanel(factory = {
-                            MyCefBrowser.mainBrowser.uiComponent
-                        })
+                        Column(modifier = Modifier.fillMaxSize()) {
+                            TabbedBrowser()
+                        }
                     } else {
                         Column(modifier = Modifier.align(Alignment.Center)) {
                             CircularProgressIndicator(
@@ -123,9 +124,7 @@ fun main(args: Array<String>) = application {
                                 frameVisible.value = false
                                 thread {
                                     MAIN_LOGGER.info("do exit...")
-                                    SpringApplication.exit(applicationContext, { 0 })
-                                    runCatching { MyCefBrowser.mainBrowser.doClose() }
-                                    runCatching { MyCefBrowser.app.get().dispose() }
+                                    applicationContext.let { SpringApplication.exit(it, { 0 }) }
                                     exitApplication()
                                 }
                             },
@@ -137,9 +136,3 @@ fun main(args: Array<String>) = application {
         }
     }
 }
-
-
-
-
-
-

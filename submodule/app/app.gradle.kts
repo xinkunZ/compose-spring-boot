@@ -22,6 +22,7 @@ dependencies {
     implementation("com.bybutter.compose:compose-jetbrains-expui-theme:2.1.0")
     implementation(compose.material3)
     implementation("org.apache.commons:commons-lang3:3.12.0")
+    implementation("org.jsoup:jsoup:1.15.3")
 }
 
 
