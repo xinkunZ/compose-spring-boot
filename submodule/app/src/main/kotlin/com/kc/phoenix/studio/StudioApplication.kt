@@ -1,25 +1,45 @@
 package com.kc.phoenix.studio
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ProvideTextStyle
+import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.ProvidedValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.*
-import androidx.compose.ui.window.*
-import com.kc.phoenix.studio.cef.*
-import io.kanro.compose.jetbrains.expui.control.Label
-import io.kanro.compose.jetbrains.expui.theme.*
-import io.kanro.compose.jetbrains.expui.window.*
-import kotlinx.coroutines.*
-import org.slf4j.*
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.WindowPosition
+import androidx.compose.ui.window.application
+import androidx.compose.ui.window.rememberDialogState
+import androidx.compose.ui.window.rememberWindowState
+import com.kc.phoenix.studio.cef.MyCefBrowser
+import com.kc.phoenix.studio.cef.TabbedBrowser
+import io.kanro.compose.jetbrains.expui.theme.LightTheme
+import io.kanro.compose.jetbrains.expui.theme.Theme
+import io.kanro.compose.jetbrains.expui.window.JBWindow
+import io.kanro.compose.jetbrains.expui.window.LocalMainToolBarColors
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.builder.SpringApplicationBuilder
+import org.springframework.boot.context.event.ApplicationEnvironmentPreparedEvent
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan
 import org.springframework.context.ApplicationContext
+import org.springframework.context.ApplicationListener
+import org.springframework.core.env.MapPropertySource
 import org.springframework.web.bind.annotation.RestController
 import java.awt.Toolkit
+import java.io.IOException
+import java.net.Socket
 import kotlin.concurrent.thread
 
 /**
@@ -61,8 +81,8 @@ fun main(args: Array<String>) = application {
             MAIN_LOGGER.info("load spring boot")
             applicationContext = SpringApplicationBuilder(StudioApplication::class.java)
                 .headless(false)
-                .listeners(MyCefBrowser)
-                .run(*withPort(args).toTypedArray());
+                .listeners(RandomPortPrepare, MyCefBrowser)
+                .run(*args)
             browserReady.value = true
         }
     })
@@ -134,5 +154,34 @@ fun main(args: Array<String>) = application {
                 }
             }
         }
+    }
+}
+
+object RandomPortPrepare : ApplicationListener<ApplicationEnvironmentPreparedEvent> {
+    override fun onApplicationEvent(event: ApplicationEnvironmentPreparedEvent) {
+        val range = 9045..9999
+        val randomPort = randomPort(range)
+        if (randomPort < range.first) {
+            throw IllegalStateException("can not find available port in [$range]")
+        }
+        MAIN_LOGGER.info("service start with port: $randomPort")
+        event.environment.propertySources.addFirst(MapPropertySource("random-port", mapOf("server.port" to randomPort)))
+    }
+
+    private fun isLocalPortInUse(port: Int): Boolean {
+        try {
+            Socket("localhost", port).use { ignored -> return true }
+        } catch (ignored: IOException) {
+            return false
+        }
+    }
+
+    private fun randomPort(range: IntRange): Int {
+        val port = range.find { !isLocalPortInUse(it) }
+        if (port == null) {
+            MAIN_LOGGER.warn("can not find available port in [$range]")
+            return -1
+        }
+        return port
     }
 }

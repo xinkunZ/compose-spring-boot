@@ -5,25 +5,37 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.input.key.*
 import com.google.common.collect.Lists
 import com.jetbrains.cef.JCefAppConfig
-import com.kc.phoenix.studio.*
+import com.kc.phoenix.studio.MAIN_LOGGER
 import org.apache.commons.lang3.StringUtils
-import org.cef.*
-import org.cef.browser.*
-import org.cef.callback.*
+import org.cef.CefApp
+import org.cef.CefClient
+import org.cef.OS
+import org.cef.browser.CefBrowser
+import org.cef.browser.CefFrame
+import org.cef.browser.CefRendering
+import org.cef.callback.CefBeforeDownloadCallback
+import org.cef.callback.CefDownloadItem
+import org.cef.callback.CefDownloadItemCallback
 import org.cef.handler.*
 import org.jsoup.Jsoup
 import org.springframework.beans.factory.DisposableBean
+import org.springframework.beans.factory.getBean
+import org.springframework.boot.autoconfigure.web.ServerProperties
 import org.springframework.boot.context.event.ApplicationReadyEvent
-import org.springframework.context.*
+import org.springframework.context.ApplicationContext
+import org.springframework.context.ApplicationListener
 import org.springframework.http.RequestEntity
 import org.springframework.http.converter.StringHttpMessageConverter
 import org.springframework.web.client.RestTemplate
-import java.awt.*
+import java.awt.BorderLayout
+import java.awt.Desktop
+import java.awt.Dimension
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference
-import java.util.function.*
+import java.util.function.Consumer
+import java.util.function.Predicate
 import javax.swing.*
 
 object MyCefBrowser : ApplicationListener<ApplicationReadyEvent>, DisposableBean {
@@ -36,10 +48,12 @@ object MyCefBrowser : ApplicationListener<ApplicationReadyEvent>, DisposableBean
 
     override fun onApplicationEvent(event: ApplicationReadyEvent) {
         applicationContext = event.applicationContext
-        loadCefBrowser(event.args)
+        val serverProperties = event.applicationContext.getBean<ServerProperties>()
+        val url = "https://www.baidu.com" // or use: "http://localhost:${serverProperties.port}/"
+        loadCefBrowser(event.args, url)
     }
 
-    private fun loadCefBrowser(args: Array<String>) {
+    private fun loadCefBrowser(args: Array<String>, url: String) {
         try {
             val instance = JCefAppConfig.getInstance()
             val locale: MutableList<String?> = Lists.newArrayList()
@@ -67,8 +81,9 @@ object MyCefBrowser : ApplicationListener<ApplicationReadyEvent>, DisposableBean
             cefClient.addLifeSpanHandler(LifeSpanHandlerAdapter)
             cefClient.addKeyboardHandler(KeyboardHandlerAdapter)
             cefClient.addLoadHandler(LoadHandlerAdapter)
-            val url = "https://www.baidu.com" // or use systemUrl show default page
             val createBrowser = cefClient.createBrowser(url, CefRendering.DEFAULT, false)
+            createBrowser.createImmediately()
+            MAIN_LOGGER.info("load url: $url")
             pages.add(BrowserTab(WebPageTab(true, url), createBrowser))
         } catch (e: Throwable) {
             MAIN_LOGGER.error("error: ", e)
@@ -83,34 +98,6 @@ object MyCefBrowser : ApplicationListener<ApplicationReadyEvent>, DisposableBean
         }
     }
 
-    object DownloadHandlerAdapter : CefDownloadHandlerAdapter() {
-
-        override fun onBeforeDownload(
-            browser: CefBrowser,
-            downloadItem: CefDownloadItem,
-            suggestedName: String,
-            callback: CefBeforeDownloadCallback
-        ) {
-            callback.Continue(suggestedName, true)
-        }
-
-        override fun onDownloadUpdated(
-            browser: CefBrowser,
-            downloadItem: CefDownloadItem,
-            callback: CefDownloadItemCallback
-        ) {
-            if (downloadItem.percentComplete > 1) {
-                // remove the download tab after 1%.
-                pages.removeIf { it.cefBrowser == browser }
-            }
-            println("download: ${downloadItem.percentComplete}%")
-            if (downloadItem.isComplete) {
-                browser.doClose()
-                Desktop.getDesktop().browseFileDirectory(File(downloadItem.fullPath))
-            }
-        }
-    }
-
     object LifeSpanHandlerAdapter : CefLifeSpanHandlerAdapter() {
         override fun onBeforePopup(
             browser: CefBrowser,
@@ -118,7 +105,6 @@ object MyCefBrowser : ApplicationListener<ApplicationReadyEvent>, DisposableBean
             targetUrl: String,
             targetFrameName: String
         ): Boolean {
-            // or just use browser.loadURL() to load new url in the current tab without multi tabs support
             val newBrowser = cefClient.get().createBrowser(targetUrl, CefRendering.DEFAULT, false)
             newBrowser.createImmediately()
             pages.add(
@@ -166,11 +152,36 @@ private fun title(url: String): String {
     }.getOrElse { "" }
 }
 
-class BrowserTab(
-    val webPageTab: WebPageTab,
-    val cefBrowser: CefBrowser
-)
+data class BrowserTab(val webPageTab: WebPageTab, val cefBrowser: CefBrowser)
 
+
+object DownloadHandlerAdapter : CefDownloadHandlerAdapter() {
+
+    override fun onBeforeDownload(
+        browser: CefBrowser,
+        downloadItem: CefDownloadItem,
+        suggestedName: String,
+        callback: CefBeforeDownloadCallback
+    ) {
+        callback.Continue(suggestedName, true)
+    }
+
+    override fun onDownloadUpdated(
+        browser: CefBrowser,
+        downloadItem: CefDownloadItem,
+        callback: CefDownloadItemCallback
+    ) {
+        if (downloadItem.percentComplete > 1) {
+            // remove the download tab after 1%.
+            MyCefBrowser.pages.removeIf { it.cefBrowser == browser }
+        }
+        println("download: ${downloadItem.percentComplete}%")
+        if (downloadItem.isComplete) {
+            browser.doClose()
+            Desktop.getDesktop().browseFileDirectory(File(downloadItem.fullPath))
+        }
+    }
+}
 
 @OptIn(ExperimentalComposeUiApi::class)
 object KeyboardHandlerAdapter : CefKeyboardHandlerAdapter() {
