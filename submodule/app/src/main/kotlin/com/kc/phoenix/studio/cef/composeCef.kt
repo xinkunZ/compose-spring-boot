@@ -35,7 +35,6 @@ fun TestAddScreen(add: () -> Unit) {
 @Composable
 fun TabbedBrowser() {
     var selectedTabIndex by remember { mutableStateOf(0) }
-    var updateTab by remember { mutableStateOf(false) }
 
     val tabs = remember { MyCefBrowser.pages }
     selectedTabIndex = if (selectedTabIndex >= tabs.size) selectedTabIndex - 1 else selectedTabIndex

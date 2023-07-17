@@ -28,3 +28,9 @@ there is a gradle task to copy jetbrains runtime to native distribution, then it
 - [x] Custom MainToolBar with [compose-jetbrains-theme](https://github.com/ButterCam/compose-jetbrains-theme/)
 - [x] Swagger page as default web page after start
 - [x] Support tabbed browser, or single page browser 
+- [x] Support default shortcut key for browser
+  *  `copy`: ctrl/command + c
+  *  `paste`: ctrl/command + v
+  *  `selectAll`: ctrl/command + a
+  *  `undo`: ctrl/command + z
+  *  `redo`: ctrl/command + y

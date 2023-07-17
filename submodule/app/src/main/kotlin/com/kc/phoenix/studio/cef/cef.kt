@@ -7,6 +7,8 @@ import java.awt.event.InputEvent
 import java.awt.event.KeyEvent
 
 /**
+ * copy from intellij-community
+ *
  * @author zhangxinkun
  */
 

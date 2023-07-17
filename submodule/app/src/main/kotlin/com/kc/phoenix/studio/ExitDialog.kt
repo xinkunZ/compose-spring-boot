@@ -16,7 +16,7 @@ import androidx.compose.ui.window.*
 @Preview
 fun ExitDialog(doExit: () -> Unit = {}, dismiss: () -> Unit = {}, state: DialogState) {
     Dialog(
-        onCloseRequest = dismiss, resizable = false, title = "确认", state = state
+        onCloseRequest = dismiss, resizable = false, title = "confirmation", state = state
     ) {
         Column(modifier = Modifier.padding(10.dp).fillMaxHeight()) {
             Row(modifier = Modifier.padding(20.dp)) {
@@ -31,7 +31,7 @@ fun ExitDialog(doExit: () -> Unit = {}, dismiss: () -> Unit = {}, state: DialogS
 
                 BoxWithConstraints(modifier = Modifier.align(Alignment.CenterVertically)) {
                     ProvideTextStyle(MaterialTheme.typography.titleLarge) {
-                        Text("确定要退出吗？")
+                        Text("Are you sure to close app?")
                     }
                 }
             }
