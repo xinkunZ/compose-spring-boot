@@ -118,6 +118,7 @@ object MyCefBrowser : ApplicationListener<ApplicationReadyEvent>, DisposableBean
             targetUrl: String,
             targetFrameName: String
         ): Boolean {
+            // or just use browser.loadURL() to load new url in the current tab without multi tabs support
             val newBrowser = cefClient.get().createBrowser(targetUrl, CefRendering.DEFAULT, false)
             newBrowser.createImmediately()
             pages.add(
