@@ -1,6 +1,6 @@
 package com.kc.phoenix.studio.cef
 
-import androidx.compose.animation.*
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -13,6 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.SwingPanel
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import java.awt.BorderLayout
+import javax.swing.JPanel
 
 
 /**
@@ -67,20 +69,21 @@ fun TabbedBrowser() {
 //    TestAddScreen { }
 }
 
+val cefPanel = JPanel(BorderLayout()).apply {
+    border = null
+}
+
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun SwingBrowser(selectedTabIndex: Int, tabs: SnapshotStateList<BrowserTab>) {
-    AnimatedContent(
-        targetState = selectedTabIndex,
-        transitionSpec = {
-            fadeIn() with fadeOut()
-        }
-    ) {
-        if (selectedTabIndex != -1) {
-            SwingPanel(modifier = Modifier.fillMaxSize(), factory = {
-                tabs[selectedTabIndex].cefBrowser.uiComponent
-            })
-        }
+    if (selectedTabIndex != -1) {
+        SwingPanel(modifier = Modifier.fillMaxSize(), factory = {
+            cefPanel
+        }, update = {
+            val cef = tabs[selectedTabIndex].cefBrowser
+            cef.setFocus(true)
+            it.add(cef.uiComponent, BorderLayout.CENTER)
+        })
     }
 }
 
